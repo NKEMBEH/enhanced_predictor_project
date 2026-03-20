@@ -108,7 +108,7 @@ enhanced_predictor_project/
 - **Algorithm**: Tuned AdaBoost Classifier
 - **Input Features**: 35 categorical features (values 1-9)
 - **Output Classes**: 10 substance dependency categories
-- **Accuracy**: 95%+
+- **Accuracy**: 85%+
 
 ## License
 
