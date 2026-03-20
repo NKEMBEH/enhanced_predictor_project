@@ -1,0 +1,406 @@
+<!-- predictor/templates/predictor/single_prediction.html -->
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Single Prediction - Substance Dependency Predictor{% endblock %}
+
+{% block content %}
+<style>
+    .step-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .step-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .step-header h2 {
+        color: white;
+        font-size: 1.8rem;
+        margin: 0;
+    }
+
+    .step-content {
+        padding: 2.5rem;
+    }
+
+    .form-field-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .result-card {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        border-left: 4px solid #667eea;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .feature-importance {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        border-left: 3px solid #667eea;
+        transition: all 0.2s ease;
+    }
+
+    .feature-importance:hover {
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        transform: translateX(4px);
+    }
+
+    .feature-name {
+        font-weight: 600;
+        color: #333;
+        font-size: 0.95rem;
+    }
+
+    .feature-weight {
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .positive-weight {
+        color: #28a745;
+    }
+
+    .negative-weight {
+        color: #dc3545;
+    }
+
+    .progress-custom {
+        height: 8px;
+        border-radius: 10px;
+        background: #e0e0e0;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+
+    .progress-custom-bar {
+        height: 100%;
+        background: var(--primary-gradient);
+        width: 0%;
+        transition: width 0.6s ease;
+        border-radius: 10px;
+    }
+
+    .step-indicator {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+    }
+
+    .step-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        font-weight: 600;
+        color: #666;
+        position: relative;
+    }
+
+    .step-number.active {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .step-number.completed {
+        background: var(--success-gradient);
+        color: white;
+    }
+
+    .input-group-text {
+        background: transparent;
+        border-right: 0;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: space-between;
+        margin-top: 2rem;
+    }
+
+    .inputs-summary {
+        column-count: 2;
+        column-gap: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .inputs-summary {
+            column-count: 1;
+        }
+
+        .button-group {
+            flex-wrap: wrap;
+        }
+
+        .button-group button {
+            flex: 1;
+            min-width: 100px;
+        }
+    }
+</style>
+
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-lg-9">
+        {% if prediction_result_text or error_message %}
+            <!-- RESULTS SECTION -->
+            <div class="step-container">
+                <div class="step-header">
+                    <h2><i class="fas fa-check-circle"></i> Prediction Results</h2>
+                </div>
+                <div class="step-content">
+                    {% if error_message %}
+                        <div class="alert alert-danger d-flex align-items-center" role="alert">
+                            <i class="fas fa-exclamation-triangle me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Error:</strong><br>
+                                {{ error_message }}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if prediction_result_text %}
+                        <!-- Prediction Result Card -->
+                        <div class="result-card">
+                            <p class="mb-2" style="color: #666; font-size: 0.95rem;">
+                                <i class="fas fa-brain"></i> Predicted Dependency Status
+                            </p>
+                            <div class="result-value">{{ prediction_result_text }}</div>
+                        </div>
+
+                        <!-- Input Summary -->
+                        <div class="mt-4">
+                            <h5 class="mb-3">
+                                <i class="fas fa-list-check"></i> Your Input Profile
+                            </h5>
+                            <div class="inputs-summary">
+                                {% for feature, value in decoded_user_inputs.items %}
+                                    <div style="margin-bottom: 1rem;">
+                                        <small class="text-muted">{{ feature }}</small><br>
+                                        <strong style="color: #667eea;">{{ value }}</strong>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- LIME Explanations -->
+                        <div>
+                            <h5 class="mb-3">
+                                <i class="fas fa-lightbulb"></i> Model Interpretation (LIME)
+                                {% if not lime_available %}
+                                    <span class="badge bg-secondary">Not Available</span>
+                                {% endif %}
+                            </h5>
+
+                            {% if lime_explanation_list %}
+                                <p class="text-muted mb-3">Top features influencing this prediction:</p>
+                                {% for feature, weight in lime_explanation_list %}
+                                    <div class="feature-importance">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="feature-name">{{ feature|truncatechars:55 }}</span>
+                                            <span class="feature-weight {% if weight > 0 %}positive-weight{% else %}negative-weight{% endif %}">
+                                                {% if weight > 0 %}<i class="fas fa-arrow-up"></i>{% else %}<i class="fas fa-arrow-down"></i>{% endif %}
+                                                {{ weight|floatformat:4 }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                <div class="alert alert-info mt-3 mb-0">
+                                    <small>
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Green values</strong> support this prediction; 
+                                        <strong>Red values</strong> oppose it.
+                                    </small>
+                                </div>
+
+                            {% elif lime_error_message %}
+                                <div class="alert alert-warning" role="alert">
+                                    <h6 class="alert-heading">
+                                        <i class="fas fa-exclamation-triangle"></i> Interpretation Failed
+                                    </h6>
+                                    <p class="mb-2">Could not generate model interpretation due to:</p>
+                                    <ul class="mb-2">
+                                        <li>Missing training data sample</li>
+                                        <li>Data type mismatches</li>
+                                        <li>Model compatibility issues</li>
+                                    </ul>
+                                    <hr>
+                                    <small style="font-family: monospace; font-size: 0.8rem;">{{ lime_error_message }}</small>
+                                </div>
+
+                            {% elif lime_available %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    Model interpretation was not generated for this prediction.
+                                </div>
+
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <h6 class="alert-heading">
+                                        <i class="fas fa-cogs"></i> Initialization Required
+                                    </h6>
+                                    <p class="mb-0">The LIME explainer could not be initialized. This may be due to missing training data or configuration issues.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="button-group mt-5">
+                            <a href="{% url 'predictor:single_prediction' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> New Prediction
+                            </a>
+                            <a href="{% url 'predictor:batch_prediction' %}" class="btn btn-secondary">
+                                <i class="fas fa-file-upload"></i> Batch Analysis
+                            </a>
+                            <a href="{% url 'predictor:home' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-home"></i> Home
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        {% else %}
+            <!-- FORM SECTION -->
+            <div class="step-container">
+                <div class="step-header">
+                    <h2><i class="fas fa-align-left"></i> Make a Prediction</h2>
+                    <p class="mb-0 mt-2" style="opacity: 0.95;">Step {{ current_step|add:1 }} of {{ total_steps }}: {{ current_title }}</p>
+                </div>
+
+                <div class="step-content">
+                    <!-- Progress Bar -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="text-muted"><strong>Progress</strong></small>
+                            <small class="text-muted" id="progressText">{{ current_step|add:1 }} of {{ total_steps }}</small>
+                        </div>
+                        <div class="progress-custom">
+                            <div class="progress-custom-bar" id="progressBar" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <form method="POST" id="multiStepForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="current_step" value="{{ current_step }}">
+
+                        {% if current_form %}
+                            <div class="row">
+                                {% for field in current_form %}
+                                    <div class="col-md-6">
+                                        <div class="form-field-group">
+                                            {{ field|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <div style="font-size: 3rem; margin-bottom: 1rem;">
+                                    <i class="fas fa-check-circle" style="color: #84fab0;"></i>
+                                </div>
+                                <h4 class="mb-2">All Steps Complete!</h4>
+                                <p class="text-muted mb-0">Click below to process your prediction</p>
+                            </div>
+                        {% endif %}
+
+                        <!-- Button Group -->
+                        <div class="button-group">
+                            <button type="submit" name="previous_step" class="btn btn-outline-secondary" id="prevBtn" style="display: none;">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </button>
+                            <div>
+                                <button type="submit" name="next_step" class="btn btn-primary" id="nextBtn">
+                                    Next <i class="fas fa-chevron-right"></i>
+                                </button>
+                                <button type="submit" name="get_prediction" class="btn btn-success" id="submitBtn" style="display: none;">
+                                    <i class="fas fa-magic"></i> Get Prediction
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="card mt-4" style="border: none; background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05)); border-left: 4px solid #667eea;">
+                <div class="card-body">
+                    <h6 class="mb-2"><i class="fas fa-info-circle" style="color: #667eea;"></i> About This Form</h6>
+                    <p class="mb-0 small text-muted">
+                        This multi-step form collects comprehensive information about demographics, substance use history, and behavioral factors. 
+                        All information is processed securely and used only for prediction purposes.
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const multiStepForm = document.getElementById('multiStepForm');
+    if (!multiStepForm) return;
+
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const currentStep = parseInt("{{ current_step|default:0 }}");
+    const totalSteps = parseInt("{{ total_steps|default:0 }}");
+
+    function updateFormState() {
+        const progressPercentage = ((currentStep + 1) / (totalSteps + 1)) * 100;
+        progressBar.style.width = progressPercentage + '%';
+
+        if (currentStep < totalSteps) {
+            progressText.innerText = `Step ${currentStep + 1} of ${totalSteps}`;
+        } else {
+            progressText.innerText = `Ready to Predict`;
+            progressBar.style.width = '100%';
+        }
+
+        prevBtn.style.display = currentStep === 0 ? 'none' : 'inline-block';
+        nextBtn.style.display = currentStep >= totalSteps ? 'none' : 'inline-block';
+        submitBtn.style.display = currentStep === totalSteps ? 'inline-block' : 'none';
+
+        if (currentStep === totalSteps - 1) {
+            nextBtn.style.display = 'none';
+            submitBtn.style.display = 'inline-block';
+            submitBtn.innerHTML = '<i class="fas fa-magic"></i> Complete & Get Prediction';
+        }
+    }
+
+    updateFormState();
+});
+</script>
+{% endblock %}

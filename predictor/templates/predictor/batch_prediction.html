@@ -1,0 +1,325 @@
+<!-- predictor/templates/predictor/batch_prediction.html -->
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Batch Prediction Analysis - Substance Dependency Predictor{% endblock %}
+
+{% block content %}
+<style>
+    .upload-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .upload-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .upload-header h2 {
+        color: white;
+        font-size: 1.8rem;
+        margin: 0;
+    }
+
+    .upload-content {
+        padding: 2.5rem;
+    }
+
+    .upload-form-group {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+        border: 2px dashed #667eea;
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .upload-form-group:hover {
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    }
+
+    .upload-icon {
+        font-size: 2.5rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+
+    .viz-section {
+        margin-top: 3rem;
+        margin-bottom: 3rem;
+    }
+
+    .viz-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 3px solid #667eea;
+    }
+
+    .viz-header h3 {
+        color: #333;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .viz-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .viz-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .viz-card-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 1.2rem;
+        text-align: center;
+    }
+
+    .viz-card-header h5 {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .viz-card-body {
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .viz-card-body img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .table-container-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .table-container-header h4 {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .table-responsive-custom {
+        max-height: 500px;
+        overflow-y: auto;
+        padding: 1.5rem;
+    }
+
+    .download-section {
+        background: linear-gradient(135deg, rgba(132, 250, 176, 0.1), rgba(143, 211, 244, 0.1));
+        border-left: 4px solid #28a745;
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .download-section h5 {
+        color: #333;
+        margin-bottom: 1.5rem;
+    }
+
+    .error-banner {
+        background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(255, 193, 7, 0.1));
+        border-left: 4px solid #dc3545;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .upload-content {
+            padding: 1.5rem;
+        }
+
+        .viz-card-body {
+            padding: 1rem;
+        }
+
+        .table-responsive-custom {
+            max-height: 400px;
+        }
+    }
+</style>
+
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-lg-10">
+        <!-- UPLOAD SECTION -->
+        <div class="upload-container mb-5">
+            <div class="upload-header">
+                <h2><i class="fas fa-file-upload"></i> Batch Prediction Analysis</h2>
+                <p class="mb-0 mt-2" style="opacity: 0.95;">Upload your data for comprehensive predictions</p>
+            </div>
+
+            <div class="upload-content">
+                {% if error_message %}
+                    <div class="error-banner">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-exclamation-triangle me-3" style="color: #dc3545; font-size: 1.3rem;"></i>
+                            <div>
+                                <strong>Error:</strong>
+                                <p class="mb-0 mt-1">{{ error_message }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="upload-form-group">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h5 class="mb-2">Upload Excel File</h5>
+                        <p class="text-muted mb-3">Drag and drop your file or click to browse</p>
+                        {{ form|crispy }}
+                        <button type="submit" name="process_file" class="btn btn-primary btn-lg mt-3">
+                            <i class="fas fa-magic"></i> Process File & Generate Analysis
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Info Box -->
+                <div class="alert alert-info mt-4 mb-0">
+                    <h6 class="alert-heading"><i class="fas fa-info-circle"></i> File Format</h6>
+                    <p class="mb-1"><strong>Supported formats:</strong> .xls, .xlsx</p>
+                    <p class="mb-0"><strong>Recommended:</strong> Include Age_Group and Gender columns for enhanced visualizations</p>
+                </div>
+            </div>
+        </div>
+
+        {% if results_df_html %}
+            <!-- VISUALIZATIONS SECTION -->
+            <div class="viz-section">
+                <div class="viz-header">
+                    <h3><i class="fas fa-chart-bar"></i> Analysis Visualizations</h3>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Age Distribution Chart -->
+                    <div class="col-md-6">
+                        <div class="viz-card">
+                            <div class="viz-card-header">
+                                <h5><i class="fas fa-calendar"></i> Age Group Distribution</h5>
+                            </div>
+                            <div class="viz-card-body">
+                                {% if age_group_pie_chart %}
+                                    <img src="data:image/png;base64,{{ age_group_pie_chart }}" alt="Age Group Distribution" class="img-fluid">
+                                {% else %}
+                                    <div style="padding: 2rem; color: #999;">
+                                        <i class="fas fa-chart-pie" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                                        <p class="mb-0">Could not generate chart</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dependency Status Chart -->
+                    <div class="col-md-6">
+                        <div class="viz-card">
+                            <div class="viz-card-header">
+                                <h5><i class="fas fa-chart-bar"></i> Overall Predicted Status</h5>
+                            </div>
+                            <div class="viz-card-body">
+                                {% if dependency_status_bar_plot %}
+                                    <img src="data:image/png;base64,{{ dependency_status_bar_plot }}" alt="Dependency Status" class="img-fluid">
+                                {% else %}
+                                    <div style="padding: 2rem; color: #999;">
+                                        <i class="fas fa-chart-bar" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                                        <p class="mb-0">Could not generate chart</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grouped Analysis Chart -->
+                    <div class="col-12">
+                        <div class="viz-card">
+                            <div class="viz-card-header">
+                                <h5><i class="fas fa-users"></i> Status by Age & Gender</h5>
+                            </div>
+                            <div class="viz-card-body">
+                                {% if gender_age_dependency_plot %}
+                                    <img src="data:image/png;base64,{{ gender_age_dependency_plot }}" alt="Status by Demographics" class="img-fluid">
+                                {% else %}
+                                    <div style="padding: 2rem; color: #999;">
+                                        <i class="fas fa-chart-line" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                                        <p class="mb-0">Could not generate grouped analysis. Ensure Gender and Age_Group columns are present.</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESULTS TABLE SECTION -->
+            <div class="table-container">
+                <div class="table-container-header">
+                    <h4><i class="fas fa-table"></i> Prediction Results Preview</h4>
+                </div>
+                <div class="table-responsive-custom">
+                    {{ results_df_html|safe }}
+                </div>
+            </div>
+
+            <!-- DOWNLOAD SECTION -->
+            {% if show_download_button %}
+                <div class="download-section">
+                    <h5><i class="fas fa-download"></i> Export Results</h5>
+                    <p class="text-muted mb-3">Download the complete prediction results as an Excel file</p>
+                    <form method="POST" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" name="download_excel" class="btn btn-success btn-lg">
+                            <i class="fas fa-file-excel"></i> Download Full Results as Excel
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 3rem; margin-bottom: 2rem;">
+                <a href="{% url 'predictor:batch_prediction' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> New Batch
+                </a>
+                <a href="{% url 'predictor:single_prediction' %}" class="btn btn-secondary">
+                    <i class="fas fa-user"></i> Single Prediction
+                </a>
+                <a href="{% url 'predictor:home' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-home"></i> Home
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

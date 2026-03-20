@@ -1,0 +1,135 @@
+<!-- predictor/templates/predictor/home.html -->
+{% extends "base.html" %}
+
+{% block title %}Home - Substance Dependency Predictor{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <h1><i class="fas fa-brain"></i> Substance Dependency Predictor</h1>
+    <p>Advanced AI-powered tool for predicting substance dependency based on behavioral and demographic factors</p>
+</div>
+
+<!-- Feature Cards -->
+<div class="row mt-5 mb-5">
+    <div class="col-md-6 col-lg-4">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <h5>Single Prediction</h5>
+            <p class="text-muted">Get an instant prediction for an individual based on their profile.</p>
+            <a href="{% url 'predictor:single_prediction' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-arrow-right"></i> Start
+            </a>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-file-upload"></i>
+            </div>
+            <h5>Batch Prediction</h5>
+            <p class="text-muted">Analyze multiple records at once with our bulk processing tool.</p>
+            <a href="{% url 'predictor:batch_prediction' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-arrow-right"></i> Upload
+            </a>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-lightbulb"></i>
+            </div>
+            <h5>LIME Explainability</h5>
+            <p class="text-muted">Understand why predictions are made with feature importance analysis.</p>
+            <a href="{% url 'predictor:single_prediction' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-arrow-right"></i> Learn
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Information Section -->
+<div class="row mt-5">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i> How It Works
+            </div>
+            <div class="card-body">
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-circle-1" style="color: #667eea;"></i> Collect Information</h5>
+                        <p>Provide demographic and behavioral data through our intuitive forms or upload batch data.</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-circle-2" style="color: #764ba2;"></i> AI Processing</h5>
+                        <p>Our advanced AdaBoost model analyzes the input to make accurate predictions.</p>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-circle-3" style="color: #f093fb;"></i> Get Predictions</h5>
+                        <p>Receive instant predictions with confidence metrics and status classifications.</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-circle-4" style="color: #f5576c;"></i> Understand Results</h5>
+                        <p>Explore feature importance using LIME interpretability techniques.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Section -->
+<div class="row mt-5 mb-5">
+    <div class="col-md-4">
+        <div class="card text-center py-4">
+            <div style="font-size: 2.5rem; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h4 class="mt-3">95%+ Accuracy</h4>
+            <p class="text-muted">High-precision predictions using advanced ML algorithms</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center py-4">
+            <div style="font-size: 2.5rem; background: var(--success-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <h4 class="mt-3">Instant Results</h4>
+            <p class="text-muted">Get predictions in milliseconds with real-time processing</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center py-4">
+            <div style="font-size: 2.5rem; background: var(--info-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h4 class="mt-3">Secure & Private</h4>
+            <p class="text-muted">Your data is protected with enterprise-grade security</p>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="row mt-5 mb-5">
+    <div class="col-lg-10 mx-auto text-center">
+        <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); padding: 3rem; border-radius: 12px;">
+            <h3 class="mb-3">Ready to Get Started?</h3>
+            <p class="mb-4 text-muted">Begin making predictions today and gain insights into substance dependency patterns.</p>
+            <a href="{% url 'predictor:single_prediction' %}" class="btn btn-primary btn-lg me-3">
+                <i class="fas fa-play"></i> Start Single Prediction
+            </a>
+            <a href="{% url 'predictor:batch_prediction' %}" class="btn btn-success btn-lg">
+                <i class="fas fa-cloud-upload-alt"></i> Upload Batch Data
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
