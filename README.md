@@ -71,19 +71,6 @@ Visit `http://localhost:8000` in your browser.
 3. View visualizations and prediction results
 4. Download full results as Excel
 
-## Deployment
-
-### Deploy to Render (Free)
-
-1. Push to GitHub
-2. Sign up at [render.com](https://render.com)
-3. Create new "Web Service" from your GitHub repository
-4. Configure:
-   - Build Command: `pip install -r requirements.txt`
-   - Start Command: `gunicorn main_project.wsgi:application`
-5. Set environment variables:
-   - `DJANGO_SECRET_KEY`: Your Django secret key
-   - `DEBUG`: false
 
 ## Project Structure
 
