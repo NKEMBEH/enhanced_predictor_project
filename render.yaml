@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: sud-predictor
+    runtime: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn main_project.wsgi:application --workers 1 --timeout 120"
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: "sud-predictor.onrender.com"
+      - key: PYTHON_VERSION
+        value: "3.13.0"
